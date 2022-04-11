@@ -49,4 +49,17 @@ module "terraform-aws-bastion-ssm-iam" {
 
   # It is possible to attach other security groups to the bastion.
   # security_group_ids = []
+
+  tags = [
+    {
+      key                 = "Owner"
+      value               = "Terraform"
+      propagate_at_launch = true
+    },
+    {
+      key                 = "Foo"
+      value               = "Bar"
+      propagate_at_launch = false
+    }
+  ]
 }

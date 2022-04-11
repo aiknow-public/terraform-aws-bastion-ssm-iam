@@ -4,6 +4,17 @@ locals {
   # We use basename of the id to ensure dependency-order
   cloudwatch_loggroup_name = "${local.cloudwatch_prepend}${basename(aws_cloudwatch_log_group.this.id)}"
   ssm_document_name        = var.create_new_ssm_document ? "SSM-SessionManagerRunShell-${random_string.this.result}" : "SSM-SessionManagerRunShell"
+
+  tags = concat(
+    [
+      {
+        key                 = "Name"
+        value               = var.name
+        propagate_at_launch = true
+      },
+    ],
+    var.tags,
+  )
 }
 
 # Creating a random string for name interpolation
@@ -84,14 +95,12 @@ resource "aws_autoscaling_group" "this" {
   health_check_grace_period = 30
   vpc_zone_identifier       = var.subnet_ids
 
-  tags = concat(
-    [
-      {
-        key                 = "Name"
-        value               = var.name
-        propagate_at_launch = true
-      },
-    ],
-    var.tags,
-  )
+  dynamic "tag" {
+    for_each = local.tags
+    content {
+      key                 = tag.value["key"]
+      value               = tag.value["value"]
+      propagate_at_launch = tag.value["propagate_at_launch"]
+    }
+  }
 }
